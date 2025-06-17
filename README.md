@@ -292,4 +292,32 @@ while (rs.next()) {
 - 可以在`finally`中关闭，保证及时其他代码出现异常，资源也一定能被关闭。
 
 
+# 批量插入
+
+## 批量插入sql语句
+
+当需要成批插入或者更新记录时，可以采用Java的批量 **更新** 机制，这一机制允许多条语句一次性提交给数据库批量处理。通常情况下比单独提交处理更有效率
+JDBC的批量处理语句包括下面三个方法：
+
+- `addBatch(String)`：添加需要批量处理的SQL语句或是参数;
+- `executeBatch()`：执行批量处理语句;
+- `clearBatch()`:清空缓存的数据
+
+通常我们会遇到两种批量执行SQL语句的情况：
+
+- 多条SQL语句的批量处理；
+- 一个SQL语句的批量传参；
+
+## 批量插入案例
+
+涉及数据库表如下:
+```sql
+create table if not exists goods(
+    id int primary key auto_increment,
+    name varchar(20)
+);
+```
+
+[批量插入案例](./01-jdbc-connection/src/test/java/com/jdbc/BatchInsertTest.java)
+
 
