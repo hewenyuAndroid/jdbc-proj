@@ -224,3 +224,69 @@ ResultSet executeQuery(String sql);
     }
 }
 ```
+
+## `ResultSet` 与 `ResultSetMetaData`
+
+### `ResultSet`
+
+- 查询需要调用 `PreparedStatement` 的 `executeQuery()` 方法，查询结果是一个 `ResultSet` 对象;
+- `ResultSet` 对象以逻辑表格的形式封装了执行数据库操作的结果集，`ResultSet` 接口由数据库厂商提供实现;
+- `ResultSet` 返回的实际上就是一张数据表,有一个指针指向数据表的第一条记录的前面;
+- `ResultSet` 对象维护了一个指向当前数据行的 **游标**，初始的时候，游标在第一行之前，可以通过 `ResultSet` 对象的 `next()` 方法移动到下一行。
+  - 调用 `next()` 方法检测下一行是否有效。
+  - 若有效，该方法返回 `true`，且指针下移。相当于 `Iterator` 对象的 `hasNext()` 和 `next()` 方法的结合体。
+- 当指针指向一行时, 可以通过调用 `getXxx(int index)` 或 `getXxx(int columnName)` 获取每一列的值。
+    - 例如: `getInt(1)`, `getString("name")`
+    - 注意：Java与数据库交互涉及到的相关Java API中的索引都从1开始。
+
+![ResultSet](./imgs/java-jdbc-prepared-statement-result-set.png)
+
+### `ResultSetMetaData`
+
+- 可用于获取关于 `ResultSet` 对象中列的类型和属性信息的对象
+- `ResultSetMetaData meta = rs.getMetaData();`
+    - `getColumnName(int column)`：获取指定列的名称
+    - `getColumnLabel(int column)`：获取指定列的别名，如果没有别名时返回列名
+    - `getColumnCount()`：返回当前 ResultSet 对象中的列数。
+    - `getColumnTypeName(int column)`：检索指定列的数据库特定的类型名称。
+    - `getColumnDisplaySize(int column)`：指示指定列的最大标准宽度，以字符为单位。
+    - `isNullable(int column)`：指示指定列中的值是否可以为 null。
+    - `isAutoIncrement(int column)`：指示是否自动为指定列进行编号，这样这些列仍然是只读的。 
+
+![ResultSet & ResultSetMetaData](./imgs/java-jdbc-result-set-result-meta-data.png)
+
+使用 `ResultDataMetaData` 获取列信息
+
+![ResultSetMetaData](./imgs/java-jdbc-result-meta-data.png)
+
+```java
+connection = JDBCUtil.getConnection();
+String sql = "select user as username, password, balance from user_table where user = ?";
+ps = connection.prepareStatement(sql);
+// jdbc 中的下标从 1 开始
+ps.setObject(1, "AA");
+// 得到结果集
+rs = ps.executeQuery();
+ResultSetMetaData metaData = rs.getMetaData();
+// 获取查询的列数
+int columnCount = metaData.getColumnCount();
+// 获取index=1的列的别名，如果没有别名返回列名
+String columnLabel = metaData.getColumnLabel(1);
+// 返回 index=1 的列的列名
+String columnName = metaData.getColumnName(1);
+while (rs.next()) {
+    User user = new User();
+    // 通过 label 读取数据
+    user.setUser(rs.getString(columnLabel));
+    // 通过 index 读取
+    user.setPassword(rs.getString(2));
+    System.out.println("user=" + user);
+}
+```
+
+
+## 资源释放
+
+- 释放 `ResultSet`, `Statement`, `Connection`。
+- 数据库连接（`Connection`）是非常稀有的资源，用完后必须马上释放，如果 `Connection` 不能及时正确的关闭将导致系统宕机。`Connection`的使用原则是**尽量晚创建，尽量早的释放。**
+- 可以在`finally`中关闭，保证及时其他代码出现异常，资源也一定能被关闭。
