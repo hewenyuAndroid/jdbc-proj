@@ -194,4 +194,33 @@ ResultSet executeQuery(String sql);
 
 ### 使用 `PreparedStatement` 实现 增删改操作
 
+详见 [PreparedStatementTest.java](./01-jdbc-connection/src/test/java/com/jdbc/PreparedStatementTest.java)
 
+```java
+ public static int update(String sql, Object... params) {
+    Connection connection = null;
+    PreparedStatement ps = null;
+    try {
+        // 1. 获取数据库连接
+        connection = JDBCUtil.getConnection();
+        // 2. 获取 preparedStatement 实例 (预编译sql)
+        ps = connection.prepareStatement(sql);
+        if (params != null && params.length > 0) {
+            // 3. 填充占位符
+            for (int i = 0; i < params.length; i++) {
+                ps.setObject(i + 1, params[i]);
+            }
+        }
+
+        // 4. 执行sql
+        // execute() 返回 true 表示有结果集，需要通过 getResultSet() 获取结果集
+        // execute() 返回 false 表示没有结果集，需要通过 getUpdateCount() 获取受影响的函数
+        ps.execute();
+        return ps.getUpdateCount();
+    } catch (Exception e) {
+        throw new RuntimeException(e);
+    } finally {
+        JDBCUtil.closeResource(connection, ps);
+    }
+}
+```

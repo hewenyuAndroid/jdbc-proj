@@ -9,6 +9,40 @@ import java.sql.ResultSetMetaData;
 public class PreparedStatementUtil {
 
     /**
+     * 通用的增删改操作
+     *
+     * @param sql    操作的目标sql
+     * @param params 参数列表
+     * @return 受影响的行数
+     */
+    public static int update(String sql, Object... params) {
+        Connection connection = null;
+        PreparedStatement ps = null;
+        try {
+            // 1. 获取数据库连接
+            connection = JDBCUtil.getConnection();
+            // 2. 获取 preparedStatement 实例 (预编译sql)
+            ps = connection.prepareStatement(sql);
+            if (params != null && params.length > 0) {
+                // 3. 填充占位符
+                for (int i = 0; i < params.length; i++) {
+                    ps.setObject(i + 1, params[i]);
+                }
+            }
+
+            // 4. 执行sql
+            // execute() 返回 true 表示有结果集，需要通过 getResultSet() 获取结果集
+            // execute() 返回 false 表示没有结果集，需要通过 getUpdateCount() 获取受影响的函数
+            ps.execute();
+            return ps.getUpdateCount();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        } finally {
+            JDBCUtil.closeResource(connection, ps);
+        }
+    }
+
+    /**
      * 针对于不同的表的通用的查询操作，返回表中的一条记录
      *
      * @param clz  要查询的目标数据类class对象
