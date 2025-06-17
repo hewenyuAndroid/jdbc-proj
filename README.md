@@ -290,3 +290,6 @@ while (rs.next()) {
 - 释放 `ResultSet`, `Statement`, `Connection`。
 - 数据库连接（`Connection`）是非常稀有的资源，用完后必须马上释放，如果 `Connection` 不能及时正确的关闭将导致系统宕机。`Connection`的使用原则是**尽量晚创建，尽量早的释放。**
 - 可以在`finally`中关闭，保证及时其他代码出现异常，资源也一定能被关闭。
+
+
+

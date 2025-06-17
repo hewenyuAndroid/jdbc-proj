@@ -5,6 +5,8 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
+import java.util.HashMap;
+import java.util.Map;
 
 public class PreparedStatementUtil {
 
@@ -87,6 +89,49 @@ public class PreparedStatementUtil {
                     field.set(t, columnValue);
                 }
                 return t;
+            }
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        } finally {
+            JDBCUtil.closeResource(connection, ps, rs);
+        }
+        return null;
+    }
+
+    public static Map<String, Object> getInstanceToMap(String sql, Object... args) {
+        Connection connection = null;
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+        try {
+            connection = JDBCUtil.getConnection();
+
+            ps = connection.prepareStatement(sql);
+            if (args != null && args.length > 0) {
+                for (int i = 0; i < args.length; i++) {
+                    ps.setObject(i + 1, args[i]);
+                }
+            }
+            // 查询数据库
+            rs = ps.executeQuery();
+            // 获取结果集的源数据
+            ResultSetMetaData metaData = rs.getMetaData();
+            // 通过 ResultSetMetaData 获取结果集中的列数
+            int columnCount = metaData.getColumnCount();
+
+            if (rs.next()) {
+                Map<String, Object> map = new HashMap<String, Object>();
+                // 处理结果集中的每一列数据
+                for (int i = 0; i < columnCount; i++) {
+                    // 获取列值
+                    Object columnValue = rs.getObject(i + 1);
+
+                    // 获取列名
+                    String columnLabel = metaData.getColumnLabel(i + 1);
+
+                    // 反射赋值
+                    map.put(columnLabel, columnValue);
+                }
+                return map;
             }
         } catch (Exception e) {
             throw new RuntimeException(e);
