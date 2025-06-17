@@ -18,17 +18,20 @@ public class PreparedStatementUtil {
      * @return 查询结果
      */
     public static <T> T getInstance(Class<T> clz, String sql, Object... args) {
+        Connection connection = null;
+        PreparedStatement ps = null;
+        ResultSet rs = null;
         try {
-            Connection connection = JDBCUtil.getConnection();
+            connection = JDBCUtil.getConnection();
 
-            PreparedStatement ps = connection.prepareStatement(sql);
+            ps = connection.prepareStatement(sql);
             if (args != null && args.length > 0) {
                 for (int i = 0; i < args.length; i++) {
                     ps.setObject(i + 1, args[i]);
                 }
             }
             // 查询数据库
-            ResultSet rs = ps.executeQuery();
+            rs = ps.executeQuery();
             // 获取结果集的源数据
             ResultSetMetaData metaData = rs.getMetaData();
             // 通过 ResultSetMetaData 获取结果集中的列数
@@ -53,6 +56,8 @@ public class PreparedStatementUtil {
             }
         } catch (Exception e) {
             throw new RuntimeException(e);
+        } finally {
+            JDBCUtil.closeResource(connection, ps, rs);
         }
         return null;
     }
