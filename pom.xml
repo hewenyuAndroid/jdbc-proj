@@ -10,6 +10,7 @@
     <packaging>pom</packaging>
     <modules>
         <module>01-jdbc-connection</module>
+        <module>02-jdbc-datasource</module>
     </modules>
 
     <properties>
@@ -32,6 +33,13 @@
                 <groupId>com.mysql</groupId>
                 <artifactId>mysql-connector-j</artifactId>
                 <version>8.0.31</version>
+            </dependency>
+
+            <!-- https://mvnrepository.com/artifact/com.mchange/c3p0 -->
+            <dependency>
+                <groupId>com.mchange</groupId>
+                <artifactId>c3p0</artifactId>
+                <version>0.10.2</version>
             </dependency>
 
         </dependencies>
